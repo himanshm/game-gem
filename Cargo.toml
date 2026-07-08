@@ -1,6 +1,6 @@
 [package]
 name = "game-gem"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "A blazing-fast, ergonomic 2D game library for Rust — no macros, no magic, just gems."
 license = "MIT"
