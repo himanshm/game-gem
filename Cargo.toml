@@ -1,0 +1,43 @@
+[package]
+name = "game-gem"
+version = "0.1.0"
+edition = "2024"
+description = "A blazing-fast, ergonomic 2D game library for Rust — no macros, no magic, just gems."
+license = "MIT"
+repository = "https://github.com/himanshmewada/game-gem"
+keywords = ["game", "2d", "engine", "gamedev", "macroquad-alternative"]
+categories = ["game-development", "graphics", "multimedia"]
+readme = "README.md"
+rust-version = "1.85"
+
+[features]
+default = ["audio", "ui", "particles", "animation", "tween", "collision"]
+
+# Individual feature gates — only pay for what you use
+audio      = ["dep:rodio"]
+ui         = []
+particles  = []
+animation  = []
+tween      = []
+collision  = []
+serde      = ["dep:serde", "glam/serde"]
+debug      = ["collision"]
+
+[dependencies]
+# Core rendering & windowing
+miniquad = { version = "0.4", default-features = false }
+glam     = { version = "0.29", features = ["bytemuck"] }
+bytemuck = { version = "1.22", features = ["derive"] }
+
+# Audio (feature-gated)
+rodio = { version = "0.20", default-features = false, optional = true }
+
+# Serialization support (feature-gated)
+serde = { version = "1.0", features = ["derive"], optional = true }
+
+# Internal utilities
+quad-rand = "0.2"
+nanoserde = "0.1"
+
+[dev-dependencies]
+# For examples only
