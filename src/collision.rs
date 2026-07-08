@@ -10,7 +10,7 @@
 //! depth and normal, enabling proper resolution — unlike macroquad which has
 //! no collision detection at all.
 
-use crate::math::{Vec2, Rect, FloatExt};
+use crate::math::{Vec2, Rect, Vec2Ext};
 
 /// Result of a collision test.
 #[derive(Debug, Clone, Copy, PartialEq)]

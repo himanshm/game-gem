@@ -7,7 +7,7 @@
 //! - **Chaining** — sequence multiple tweens on the same target
 //! - **Callback support** — `on_complete`, `on_update`
 
-use crate::math::{Vec2, Vec3, FloatExt, Lerp};
+use crate::math::Lerp;
 use std::marker::PhantomData;
 
 // ─────────────────────────────────────────────
@@ -179,11 +179,14 @@ impl Ease {
                 if t < 1.0 / D1 {
                     N1 * t * t
                 } else if t < 2.0 / D1 {
-                    N1 * (t -= 1.5 / D1) * t + 0.75
+                    let t = t - 1.5 / D1;
+                    N1 * t * t + 0.75
                 } else if t < 2.5 / D1 {
-                    N1 * (t -= 2.25 / D1) * t + 0.9375
+                    let t = t - 2.25 / D1;
+                    N1 * t * t + 0.9375
                 } else {
-                    N1 * (t -= 2.625 / D1) * t + 0.984375
+                    let t = t - 2.625 / D1;
+                    N1 * t * t + 0.984375
                 }
             }
             Ease::BounceInOut => {
@@ -427,7 +430,7 @@ impl<T: Lerp + Copy> Tween<T> {
 ///     println!("Tween completed: {}", tag);
 /// }
 /// ```
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub struct TweenManager {
     tweens: Vec<Box<dyn TweenTrait>>,
     /// Completed tags this frame.
@@ -435,7 +438,7 @@ pub struct TweenManager {
 }
 
 /// Trait object for type-erased tweens.
-trait TweenTrait {
+trait TweenTrait: AsAny {
     fn update_box(&mut self, dt: f32) -> bool;
     fn is_done(&self) -> bool;
     fn tag(&self) -> Option<&str>;
@@ -495,7 +498,7 @@ impl TweenManager {
 
     /// Stop all tweens.
     pub fn stop_all(&mut self) {
-        for tween in &mut self.tweens {
+        for _tween in &mut self.tweens {
             // We can't call stop() through the trait directly, but we can
             // mark them all as completed
         }
@@ -518,7 +521,7 @@ trait AsAny {
     fn as_any(&self) -> &dyn std::any::Any;
     fn as_any_mut(&mut self) -> &mut dyn std::any::Any;
 }
-impl<T: 'static> AsAny for Tween<T> {
+impl<T: Lerp + Copy + 'static> AsAny for Tween<T> {
     fn as_any(&self) -> &dyn std::any::Any { self }
     fn as_any_mut(&mut self) -> &mut dyn std::any::Any { self }
 }

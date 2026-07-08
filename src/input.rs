@@ -152,9 +152,9 @@ pub struct KeyboardState {
     /// Keys currently held down.
     held: std::collections::HashSet<KeyCode>,
     /// Keys pressed this frame.
-    pressed_this_frame: Vec<KeyCode>,
+    pub pressed_this_frame: Vec<KeyCode>,
     /// Keys released this frame.
-    released_this_frame: Vec<KeyCode>,
+    pub released_this_frame: Vec<KeyCode>,
     /// Currently buffered text input (from IME / key events).
     text_buffer: String,
 }

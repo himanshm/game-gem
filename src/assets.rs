@@ -32,6 +32,7 @@ struct AssetInner<T> {
     /// Path this was loaded from.
     path: String,
     /// Whether this asset has been modified (for hot-reload).
+    #[allow(dead_code)]
     modified: bool,
 }
 
@@ -85,7 +86,7 @@ pub enum AssetType {
 // ─────────────────────────────────────────────
 
 /// Status of an asset load operation.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum LoadStatus {
     /// Not yet started loading.
     NotLoaded,
@@ -139,7 +140,8 @@ pub struct AssetManager {
     config: AssetConfig,
     /// Cached loaded assets by normalized path.
     images: HashMap<String, AssetHandle<ImageAsset>>,
-    /// Loading queue.
+    /// Loading queue (reserved for future async loading).
+    #[allow(dead_code)]
     loading_queue: Vec<String>,
     /// Total bytes loaded.
     total_bytes: usize,
@@ -229,7 +231,11 @@ impl ImageAsset {
         for y in 0..total_rows / 2 {
             let top = y * row_bytes;
             let bottom = (total_rows - 1 - y) * row_bytes;
-            self.pixels[top..top + row_bytes].swap_with_slice(&mut self.pixels[bottom..bottom + row_bytes]);
+            let (top_slice, bottom_slice) =
+                self.pixels.split_at_mut(bottom);
+            let top_row = &mut top_slice[top..top + row_bytes];
+            let bottom_row = &mut bottom_slice[..row_bytes];
+            top_row.swap_with_slice(bottom_row);
         }
     }
 }

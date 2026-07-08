@@ -17,7 +17,7 @@ use crate::engine::Context;
 ///
 /// Implement this trait for each major game state.
 /// The scene manager handles transitions automatically.
-pub trait Scene: 'static {
+pub trait Scene: SceneAsAny + 'static {
     /// Called when the scene is first pushed onto the stack.
     fn on_enter(&mut self, _ctx: &mut Context) {}
 
@@ -120,6 +120,7 @@ pub struct SceneManager {
 
 #[derive(Debug)]
 struct TransitionEffect {
+    #[allow(dead_code)]
     kind: Transition,
     phase: TransitionPhase,
     timer: f32,
@@ -149,14 +150,15 @@ impl SceneManager {
             _ => {}
         }
 
-        // Pause current scene
+        // Pause current scene (split the borrow so we don't alias `self`).
+        let mut fake_ctx = self.make_fake_ctx();
         if let Some(current) = self.stack.last_mut() {
-            current.on_pause(&mut self.make_fake_ctx());
+            current.on_pause(&mut fake_ctx);
         }
 
         self.stack.push(Box::new(scene));
         if let Some(top) = self.stack.last_mut() {
-            top.on_enter(&mut self.make_fake_ctx());
+            top.on_enter(&mut fake_ctx);
         }
     }
 
@@ -170,13 +172,14 @@ impl SceneManager {
             _ => {}
         }
 
+        let mut fake_ctx = self.make_fake_ctx();
         if let Some(mut scene) = self.stack.pop() {
-            scene.on_exit(&mut self.make_fake_ctx());
+            scene.on_exit(&mut fake_ctx);
         }
 
         // Resume the scene below
         if let Some(top) = self.stack.last_mut() {
-            top.on_resume(&mut self.make_fake_ctx());
+            top.on_resume(&mut fake_ctx);
         }
     }
 
@@ -190,13 +193,14 @@ impl SceneManager {
             _ => {}
         }
 
+        let mut fake_ctx = self.make_fake_ctx();
         if let Some(mut old) = self.stack.pop() {
-            old.on_exit(&mut self.make_fake_ctx());
+            old.on_exit(&mut fake_ctx);
         }
 
         self.stack.push(Box::new(scene));
         if let Some(top) = self.stack.last_mut() {
-            top.on_enter(&mut self.make_fake_ctx());
+            top.on_enter(&mut fake_ctx);
         }
     }
 
@@ -244,13 +248,16 @@ impl SceneManager {
 
     /// Update the top scene and any active transition.
     pub fn update(&mut self, ctx: &mut Context) {
-        // Update transition
-        if let Some(trans) = &mut self.transition {
+        // Update transition. We pull the transition out of `self` for the
+        // duration of the body so we can call `execute_pending(&mut self, ...)`
+        // without an aliased mutable borrow.
+        let mut trans_opt = self.transition.take();
+        if let Some(trans) = &mut trans_opt {
             trans.timer += ctx.time.delta() as f32;
             match trans.phase {
                 TransitionPhase::Out => {
                     if trans.timer >= trans.half_duration {
-                        // Transition-out complete, perform the pending action
+                        // Transition-out complete, perform the pending action.
                         self.execute_pending(ctx);
                         trans.phase = TransitionPhase::In;
                         trans.timer = 0.0;
@@ -258,12 +265,15 @@ impl SceneManager {
                 }
                 TransitionPhase::In => {
                     if trans.timer >= trans.half_duration {
-                        self.transition = None;
+                        // transition is finished; drop it.
+                        // (trans_opt stays `Some` but we'll clear below)
+                        trans_opt = None;
                     }
                 }
                 TransitionPhase::Idle => {}
             }
         }
+        self.transition = trans_opt;
 
         // Update only the top scene
         if let Some(top) = self.stack.last_mut() {
@@ -355,10 +365,18 @@ impl SceneManager {
     }
 }
 
-// Helper trait for downcasting scene trait objects
-trait SceneAsAny {
+// Helper trait for downcasting scene trait objects.
+//
+// `Scene` extends `SceneAsAny` so that `dyn Scene` carries the `as_any` method
+// in its vtable, allowing runtime downcasting of trait-object pointers.
+//
+// The trait is declared `pub` (but not re-exported from the crate) so that
+// using it as a supertrait bound on the public `Scene` trait does not leak
+// private visibility.
+pub trait SceneAsAny {
     fn as_any(&self) -> &dyn std::any::Any;
 }
+
 impl<S: Scene + 'static> SceneAsAny for S {
     fn as_any(&self) -> &dyn std::any::Any { self }
 }

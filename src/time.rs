@@ -3,7 +3,7 @@
 //! game-gem provides a first-class [`Time`] resource that's automatically
 //! updated each frame, unlike macroquad which exposes raw `get_time()`.
 
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 /// Time resource, updated automatically every frame.
 ///
@@ -12,7 +12,8 @@ use std::time::{Duration, Instant};
 pub struct Time {
     /// Time since the engine started (seconds).
     elapsed: f64,
-    /// Wall-clock start time.
+    /// Wall-clock start time (kept for callers that want absolute time references).
+    #[allow(dead_code)]
     start: Instant,
     /// Time of the previous frame.
     last_frame: Instant,

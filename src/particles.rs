@@ -8,8 +8,8 @@
 //! - **Particle pooling** for zero-allocation steady-state
 //! - **Multiple emitters** active simultaneously
 
-use crate::math::{Vec2, Color, FloatExt};
-use crate::time::Time;
+use crate::math::{Vec2, FloatExt};
+use crate::color::Color;
 use quad_rand as rand;
 
 // ─────────────────────────────────────────────
@@ -360,21 +360,21 @@ pub struct ParticleEmitterConfig<'a> {
 }
 
 impl<'a> ParticleEmitterConfig<'a> {
-    pub fn rate(mut self, rate: f32) -> Self { self.emitter.rate = rate; self }
-    pub fn shape(mut self, shape: EmitterShape) -> Self { self.emitter.shape = shape; self }
-    pub fn speed(mut self, min: f32, max: f32) -> Self { self.emitter.speed_range = (min, max); self }
-    pub fn angle(mut self, min: f32, max: f32) -> Self { self.emitter.angle_range = (min, max); self }
-    pub fn size(mut self, min: f32, max: f32) -> Self { self.emitter.size_range = (min, max); self }
-    pub fn lifetime(mut self, min: f32, max: f32) -> Self { self.emitter.lifetime_range = (min, max); self }
-    pub fn gravity(mut self, x: f32, y: f32) -> Self { self.emitter.gravity = Vec2::new(x, y); self }
-    pub fn drag(mut self, drag: f32) -> Self { self.emitter.drag = drag; self }
-    pub fn max_particles(mut self, max: usize) -> Self { self.emitter.max_particles = max; self }
-    pub fn color_start(mut self, color: Color) -> Self { self.emitter.template.color_start = color; self }
-    pub fn color_end(mut self, color: Color) -> Self { self.emitter.template.color_end = color; self }
-    pub fn size_end(mut self, size: f32) -> Self { self.emitter.template.size_end = size; self }
-    pub fn burst(mut self, count: u32) -> Self { self.emitter.burst = count; self }
-    pub fn looping(mut self, looping: bool) -> Self { self.emitter.looping = looping; self }
-    pub fn rotation_speed(mut self, min: f32, max: f32) -> Self {
+    pub fn rate(&mut self, rate: f32) -> &mut Self { self.emitter.rate = rate; self }
+    pub fn shape(&mut self, shape: EmitterShape) -> &mut Self { self.emitter.shape = shape; self }
+    pub fn speed(&mut self, min: f32, max: f32) -> &mut Self { self.emitter.speed_range = (min, max); self }
+    pub fn angle(&mut self, min: f32, max: f32) -> &mut Self { self.emitter.angle_range = (min, max); self }
+    pub fn size(&mut self, min: f32, max: f32) -> &mut Self { self.emitter.size_range = (min, max); self }
+    pub fn lifetime(&mut self, min: f32, max: f32) -> &mut Self { self.emitter.lifetime_range = (min, max); self }
+    pub fn gravity(&mut self, x: f32, y: f32) -> &mut Self { self.emitter.gravity = Vec2::new(x, y); self }
+    pub fn drag(&mut self, drag: f32) -> &mut Self { self.emitter.drag = drag; self }
+    pub fn max_particles(&mut self, max: usize) -> &mut Self { self.emitter.max_particles = max; self }
+    pub fn color_start(&mut self, color: Color) -> &mut Self { self.emitter.template.color_start = color; self }
+    pub fn color_end(&mut self, color: Color) -> &mut Self { self.emitter.template.color_end = color; self }
+    pub fn size_end(&mut self, size: f32) -> &mut Self { self.emitter.template.size_end = size; self }
+    pub fn burst(&mut self, count: u32) -> &mut Self { self.emitter.burst = count; self }
+    pub fn looping(&mut self, looping: bool) -> &mut Self { self.emitter.looping = looping; self }
+    pub fn rotation_speed(&mut self, min: f32, max: f32) -> &mut Self {
         self.emitter.template.rotation_speed = rand::gen_range(min, max);
         self
     }

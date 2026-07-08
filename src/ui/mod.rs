@@ -8,7 +8,8 @@
 //! - **Layout helpers**: vertical/horizontal stacking, spacing, alignment
 //! - **Keyboard navigation**: tab between widgets, Enter to activate
 
-use crate::math::{Vec2, Rect, Color, FloatExt};
+use crate::math::{Vec2, Rect};
+use crate::color::Color;
 use crate::input::{InputState, KeyCode, MouseButton};
 
 // ─────────────────────────────────────────────
@@ -139,21 +140,26 @@ impl UiState {
 
     /// Update hover animations.
     pub fn update_animations(&mut self, dt: f32, speed: f32) {
-        let to_remove: Vec<u64> = self.hover_animations.iter()
-        .filter_map(|(&id, &t)| {
+        // Collect IDs first so we can mutate hover_animations without
+        // aliasing the iterator's borrow.
+        let ids: Vec<u64> = self.hover_animations.keys().copied().collect();
+        let mut to_remove: Vec<u64> = Vec::new();
+        for id in ids {
+            let t = *self.hover_animations.get(&id).unwrap_or(&0.0);
             if self.hovered_id == Some(id) {
                 let new_t = (t + dt * speed).min(1.0);
                 self.hover_animations.insert(id, new_t);
-                None
             } else if t > 0.0 {
                 let new_t = (t - dt * speed).max(0.0);
-                self.hover_animations.insert(id, new_t);
-                if new_t <= 0.0 { Some(id) } else { None }
+                if new_t <= 0.0 {
+                    to_remove.push(id);
+                } else {
+                    self.hover_animations.insert(id, new_t);
+                }
             } else {
-                Some(id)
+                to_remove.push(id);
             }
-        })
-        .collect();
+        }
 
         for id in to_remove {
             self.hover_animations.remove(&id);
@@ -207,7 +213,7 @@ pub fn button(
     rect: Rect,
 ) -> UiInteraction {
     let id = UiState::id_from_label(label);
-    let mouse_in_rect = input.mouse.is_down(MouseButton::Left) && rect.contains(input.mouse.position);
+    let _mouse_in_rect = input.mouse.is_down(MouseButton::Left) && rect.contains(input.mouse.position);
     let mouse_hovering = rect.contains(input.mouse.position);
 
     // Update hover
@@ -265,7 +271,7 @@ pub fn button(
 pub fn slider(
     input: &InputState,
     ui: &mut UiState,
-    theme: &UiTheme,
+    _theme: &UiTheme,
     label: &str,
     rect: Rect,
     current_value: f32,
@@ -532,7 +538,7 @@ pub fn text_input(
 
 /// Draw a text label. Returns its rect for layout purposes.
 pub fn label(
-    _theme: &UiTheme,
+    theme: &UiTheme,
     text: &str,
     position: Vec2,
     font_size: Option<f32>,
@@ -651,9 +657,9 @@ pub fn checkbox(
     let size = theme.font_size;
     let rect = Rect::new(position.x, position.y, size, size);
 
-    let interaction = button(input, ui, theme, label, &rect);
+    let interaction = button(input, ui, theme, label, rect);
     if interaction.clicked {
-        *checked = !checked;
+        *checked = !*checked;
     }
 
     interaction
@@ -666,7 +672,7 @@ pub fn checkbox(
 /// Draw a progress bar.
 pub fn progress_bar(
     _theme: &UiTheme,
-    rect: Rect,
+    _rect: Rect,
     progress: f32,
     fill_color: Option<Color>,
     bg_color: Option<Color>,

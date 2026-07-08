@@ -24,7 +24,7 @@ impl GameState for ParticlesExample {
                 .color_start(Color::from_hex("#FF6600").unwrap())
                 .color_end(Color::from_hex("#FFFF00").unwrap())
                 .size_end(0.0)
-                .drag(1.5)
+                .drag(1.5);
         });
         self.emitters.push(fire);
 
@@ -41,7 +41,7 @@ impl GameState for ParticlesExample {
                 .gravity(0.0, 20.0)
                 .color_start(Color::from_hex("#FFFFFF").unwrap())
                 .color_end(Color::TRANSPARENT)
-                .size_end(0.0)
+                .size_end(0.0);
         });
         self.emitters.push(sparkles);
     }

@@ -136,12 +136,16 @@ impl Transform {
 
     /// Inverse-transform a world point to local space.
     pub fn inverse_transform_point(&self, world_point: Vec2) -> Vec2 {
-        if let Some(inv) = self.world_matrix.inverse() {
-            let transformed = inv * glam::Vec4::new(world_point.x, world_point.y, 0.0, 1.0);
-            Vec2::new(transformed.x, transformed.y)
-        } else {
-            world_point // Degenerate transform, return as-is
+        // glam's `Mat4::inverse()` returns the inverse matrix directly
+        // (an identity-like matrix when non-invertible). For a degenerate
+        // transform we simply return the input point unchanged.
+        let det = self.world_matrix.determinant();
+        if det.abs() < 1e-9 {
+            return world_point;
         }
+        let inv = self.world_matrix.inverse();
+        let transformed = inv * glam::Vec4::new(world_point.x, world_point.y, 0.0, 1.0);
+        Vec2::new(transformed.x, transformed.y)
     }
 
     /// Linearly interpolate between two transforms.
@@ -186,7 +190,8 @@ mod tests {
     fn test_local_matrix_identity() {
         let t = Transform::default();
         let m = t.local_matrix();
-        assert!((m - glam::Mat4::IDENTITY).abs_diff_eq(glam::Mat4::IDENTITY, 1e-6));
+        // Verify that `m` is approximately equal to the identity matrix.
+        assert!(m.abs_diff_eq(glam::Mat4::IDENTITY, 1e-6));
     }
 
     #[test]

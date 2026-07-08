@@ -7,7 +7,7 @@
 //! - **Zoom limits** — clamp min/max zoom
 //! - **Viewport splitting** — split-screen support
 
-use crate::math::{Vec2, Rect, Mat4, Transform, FloatExt};
+use crate::math::{Vec2, Vec3, Rect, Mat4, Vec2Ext};
 
 /// A 2D camera that controls the view transform.
 ///
@@ -166,11 +166,9 @@ impl Camera {
     ///
     /// This transforms world coordinates to screen coordinates.
     pub fn view_matrix(&self, screen_size: Vec2) -> Mat4 {
-        let mut view = Mat4::IDENTITY;
-
         // Translate so camera position is at screen center
         let offset = self.position + self.shake.offset;
-        view = Mat4::from_translation(Vec3::new(
+        let mut view = Mat4::from_translation(Vec3::new(
             -offset.x,
             -offset.y,
             0.0,

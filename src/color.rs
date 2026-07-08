@@ -8,7 +8,7 @@
 //! - Parse from hex strings
 
 use std::str::FromStr;
-use super::FloatExt;
+use crate::math::FloatExt;
 
 /// A color represented as linear RGBA floats (0.0–1.0).
 ///

@@ -10,7 +10,7 @@
 
 #![cfg_attr(not(feature = "audio"), allow(dead_code))]
 
-use crate::math::Vec2;
+use crate::math::{Vec2, Vec2Ext, FloatExt};
 use std::collections::HashMap;
 
 // ─────────────────────────────────────────────
@@ -96,7 +96,7 @@ impl Sound {
 // ─────────────────────────────────────────────
 
 /// Master volume channels.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AudioChannel {
     /// Sound effects channel.
     Sfx,

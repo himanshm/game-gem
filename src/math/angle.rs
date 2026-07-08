@@ -136,6 +136,8 @@ mod tests {
     #[test]
     fn test_normalize() {
         let a = Angle::from_degrees(450.0).normalized();
-        assert!((a.as_degrees() - 90.0).abs() < 1e-6);
+        // Use a tolerance that accommodates f32 round-trip error from
+        // degrees -> radians -> modulo -> degrees.
+        assert!((a.as_degrees() - 90.0).abs() < 1e-4);
     }
 }

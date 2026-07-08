@@ -7,8 +7,7 @@
 //! - **Events** at specific keyframes (footstep sounds, spawn effects)
 //! - **Speed control** and **ping-pong** playback
 
-use crate::math::{Vec2, Rect, FloatExt};
-use crate::time::Timer;
+use crate::math::Vec2;
 
 // ─────────────────────────────────────────────
 // Animation data

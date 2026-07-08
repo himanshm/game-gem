@@ -99,7 +99,8 @@ impl Vec2Ext for Vec2 {
 
     #[inline]
     fn angle_to(self, other: Vec2) -> f32 {
-        (other - self).angle_from(Vec2::X)
+        let diff = other - self;
+        diff.y.atan2(diff.x)
     }
 
     #[inline]
